@@ -1,0 +1,30 @@
+{
+  "uuid": "f43df47a-c496-4275-af1c-4b7fd2938b93",
+  "shortName": "menu1",
+  "longName": "menu1",
+  "companyName": "MakeAwesomeHappen",
+  "versionLabel": "1.0",
+  "sdkVersion": "3",
+  "targetPlatforms": ["aplite", "basalt", "chalk"],
+  "enableMultiJS": true,
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [
+      {
+        "type": "bitmap",
+        "name": "UP",
+        "file": "images/a.png"
+      },
+      {
+        "type": "bitmap",
+        "name": "DOWN",
+        "file": "images/dn.png"
+      }
+    ]
+  }
+}
