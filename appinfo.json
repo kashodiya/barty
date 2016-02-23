@@ -18,12 +18,17 @@
       {
         "type": "bitmap",
         "name": "UP",
-        "file": "images/a.png"
+        "file": "images/up.png"
       },
       {
         "type": "bitmap",
         "name": "DOWN",
-        "file": "images/dn.png"
+        "file": "images/down.png"
+      },
+      {
+        "type": "bitmap",
+        "name": "DOTS",
+        "file": "images/dots.png"
       }
     ]
   }

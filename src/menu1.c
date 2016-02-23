@@ -6,7 +6,7 @@ static Window *s_main_window, *s_etd_window;
 static MenuLayer *s_menu_layer;
 static TextLayer *text_layer;
 static uint16_t current_station_index = 0;
-static GBitmap *s_up_bitmap, *s_down_bitmap;
+static GBitmap *s_up_bitmap, *s_down_bitmap, *s_dots_bitmap;
 
 typedef enum {
   KeyInit = 0,
@@ -109,9 +109,11 @@ static void window_load_etd(Window *window) {
 
   s_up_bitmap = gbitmap_create_with_resource(RESOURCE_ID_UP);
   s_down_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DOWN);
+  s_dots_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DOTS);
 
   ActionBarLayer *action_bar = action_bar_layer_create();
   action_bar_layer_set_icon(action_bar, BUTTON_ID_UP, s_up_bitmap);
+  action_bar_layer_set_icon(action_bar, BUTTON_ID_SELECT, s_dots_bitmap);
   action_bar_layer_set_icon(action_bar, BUTTON_ID_DOWN, s_down_bitmap);
   action_bar_layer_add_to_window(action_bar, window);
   action_bar_layer_set_click_config_provider(action_bar,

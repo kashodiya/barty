@@ -1,10 +1,6 @@
-
-var X2JS = require("x2js");
 var stn = '';
 var urlTemplate = "https://bart-kashodiya.c9users.io/api/etd?orig=";
 
-var key = "ZQ4M-PB6M-9VJT-DWE9";
-var bartApiUrl = "http://api.bart.gov/api/etd.aspx?cmd=etd&key=" + key + "&orig=";
 
 Pebble.addEventListener('ready', function(e) {
   console.log('JavaScript app ready and running! Sending message...');
@@ -49,40 +45,6 @@ function xhrWrapper(url, type, callback) {
 };
 
 function getEtd(stnAbbr) {
-  var url = bartApiUrl + stnAbbr;
-  console.log('Fetching URL:', url);
-
-  xhrWrapper(url, 'GET', function(req) {
-    console.log('Got API response!', req.response);
-    if(req.status == 200) {
-
-      var x2js = new X2JS();
-      var jsonObj = x2js.xml_str2json( req.response );
-      console.log('JSON Object=', JSON.stringify(jsonObj, null, 2));
-
-      $ = cheerio.load(req.response);
-      var dest = [];
-      var orig = $('station name').text();
-      var origAbbr = $('station abbr').text();
-      $('etd').each(function(i, ele){
-        var etd = $(this);
-        var destination = etd.find('abbreviation').text();
-        var minutes = etd.find('estimate minutes').first().text();
-        if(minutes === "Leaving") minutes = "0";
-        var length = etd.find('estimate length').first().text();
-        dest.push({destination: destination, minutes: minutes, length: length});
-      });
-
-      var serverResponse = {dest: dest, orig: orig, origAbbr: origAbbr};
-      console.log("Response:", JSON.stringify(serverResponse, null, 2));
-      sendMessageToWatch(serverResponse);
-    } else {
-      console.log('owm-weather: Error fetching data (HTTP Status: ' + req.status + ')');
-    }
-  }.bind(this));
-};
-
-function getEtdOld(stnAbbr) {
   var url = urlTemplate + stnAbbr;
   console.log('Fetching URL:', url);
 
