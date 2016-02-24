@@ -1,5 +1,4 @@
 
-var X2JS = require("x2js");
 var stn = '';
 var urlTemplate = "https://bart-kashodiya.c9users.io/api/etd?orig=";
 
@@ -18,6 +17,36 @@ Pebble.addEventListener('ready', function(e) {
   }
   sendMessageTest();
 });
+
+function getPosition(str, m, i, begining) {
+    var txt = str.split(m, i).join(m);
+    if(str.length === txt.length) return -1;
+    var p = begining ? m.length : 0;
+    return str.split(m, i).join(m).length + p;
+}
+
+function getTxtOfEle(x, ele, instance){
+    var p = getPosition(x, "<" + ele + ">", instance, true);
+    if(p == -1) return "";
+    var p1 = getPosition(x, "</" + ele + ">", instance, false);
+    if(p1 == -1) return "";
+    var ans = x.substr(p, p1 - p);
+    return ans;
+}
+
+
+function countEle(xml, ele){
+  var re = new RegExp("<" + ele + ">", "g");
+  var count = (xml.match(re) || []).length;
+  return count;
+}
+
+function readElement(xml, re) {
+  var m = re.exec(xml);
+  if (m===null) return "";
+  return m[1];
+}
+
 
 function sendMessageTest() {
   var transactionId = Pebble.sendAppMessage( { '0': 42, '1': 'String value' },
@@ -56,26 +85,44 @@ function getEtd(stnAbbr) {
     console.log('Got API response!', req.response);
     if(req.status == 200) {
 
-      var x2js = new X2JS();
-      var jsonObj = x2js.xml_str2json( req.response );
-      console.log('JSON Object=', JSON.stringify(jsonObj, null, 2));
+      var name = readElement(req.responseText,/<name>(.+?)<\/name>/g);
+      var abbr = readElement(req.responseText,/<abbr>(.+?)<\/abbr>/g);
+      console.log("name:", name);
+      console.log("abbr:", abbr);
 
-      $ = cheerio.load(req.response);
-      var dest = [];
-      var orig = $('station name').text();
-      var origAbbr = $('station abbr').text();
-      $('etd').each(function(i, ele){
-        var etd = $(this);
-        var destination = etd.find('abbreviation').text();
-        var minutes = etd.find('estimate minutes').first().text();
+      var etdCount = countEle(req.responseText, "etd");
+      console.log("# of etd:", etdCount);
+      var etdLines = [];
+      for(var i = 1; i <= etdCount; i++){
+        var etdXml = getTxtOfEle(req.responseText, "etd", i);
+        console.log("etd:", i);
+        console.log(etdXml);
+        var etdName = readElement(etdXml, /<destination>(.+?)<\/destination>/g);
+        var etdAbbr = readElement(etdXml, /<abbreviation>(.+?)<\/abbreviation>/g);
+        var minutes = readElement(etdXml, /<minutes>(.+?)<\/minutes>/g);
         if(minutes === "Leaving") minutes = "0";
-        var length = etd.find('estimate length').first().text();
-        dest.push({destination: destination, minutes: minutes, length: length});
-      });
+        var length = readElement(etdXml, /<length>(.+?)<\/length>/g);
+        console.log("destination", etdName);
+        console.log("abbreviation", etdAbbr);
+        console.log("minutes", minutes);
+        console.log("length", length);
+        etdLines.push(etdAbbr + " " + minutes + "m " + length + "c");
+      }
 
-      var serverResponse = {dest: dest, orig: orig, origAbbr: origAbbr};
-      console.log("Response:", JSON.stringify(serverResponse, null, 2));
-      sendMessageToWatch(serverResponse);
+      var etdStr = "\n" + name + "\n===========\n" + etdLines.join("\n")
+
+      var transactionId = Pebble.sendAppMessage( { "2": etdStr },
+        function(e) {
+          console.log('Successfully delivered message with transactionId='
+            + e.data.transactionId);
+        },
+        function(e) {
+          console.log('Unable to deliver message with transactionId='
+            + e.data.transactionId
+            + ' Error is: ' + JSON.stringify(e, null, 2));
+        }
+      );
+
     } else {
       console.log('owm-weather: Error fetching data (HTTP Status: ' + req.status + ')');
     }
